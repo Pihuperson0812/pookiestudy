@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Completed Tasks</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffe6f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background-color: white;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+        li.selected {
+            background-color: #ffcccc;
+        }
+        .nav-link {
+            margin-top: 20px;
+            display: inline-block;
+            text-decoration: none;
+            color: #ff99cc;
+            font-size: 1rem;
+        }
+        .nav-link:hover {
+            color: #ff66b2;
+        }
+        .delete-btn {
+            background-color: #ff99cc;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .delete-btn:hover {
+            background-color: #ff66b2;
+        }
+    </style>
+    <script>
+        let completedTasks = [];
+        let deleteMode = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load tasks from localStorage
+            completedTasks = JSON.parse(localStorage.getItem('completedTasks')) || [];
+            renderTasks();
+
+            // Add event listener for delete button
+            const deleteButton = document.getElementById('deleteButton');
+            deleteButton.addEventListener('click', () => {
+                deleteMode = !deleteMode;
+                if (deleteMode) {
+                    deleteButton.textContent = "Confirm Deletion";
+                } else {
+                    deleteSelectedTasks();
+                    deleteButton.textContent = "Delete Tasks";
+                }
+            });
+        });
+
+        function renderTasks() {
+            const completedList = document.getElementById('completedList');
+            completedList.innerHTML = '';
+
+            completedTasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.textContent = task.text;
+                li.dataset.index = index;
+
+                // Highlight tasks for deletion in delete mode
+                if (task.selected) {
+                    li.classList.add('selected');
+                }
+
+                // Handle click to toggle selection in delete mode
+                li.addEventListener('click', () => {
+                    if (deleteMode) {
+                        task.selected = !task.selected;
+                        li.classList.toggle('selected');
+                    }
+                });
+
+                completedList.appendChild(li);
+            });
+        }
+
+        function deleteSelectedTasks() {
+            completedTasks = completedTasks.filter(task => !task.selected);
+            localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
+            renderTasks();
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Completed Tasks</h2>
+        <button id="deleteButton" class="delete-btn">Delete Tasks</button>
+        <ul id="completedList"></ul>
+        <a href="index.html" class="nav-link">Back to Home</a>
+    </div>
+</body>
+</html>

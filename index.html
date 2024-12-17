@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer & Task Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffe6f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .timer {
+            margin: 20px auto;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .buttons {
+            margin: 20px;
+        }
+        .buttons button {
+            background-color: #ff99cc;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .buttons button:hover {
+            background-color: #ff66b2;
+        }
+        .tasks {
+            margin: 20px 0;
+            text-align: left;
+        }
+        .tasks ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .tasks li {
+            background-color: white;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .tasks li.completed {
+            text-decoration: line-through;
+            color: #aaa;
+        }
+        .tasks button {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #ff99cc;
+        }
+        .tasks button:hover {
+            color: #ff66b2;
+        }
+        .clear-btn {
+            display: none;
+            background-color: #ff99cc;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .clear-btn:hover {
+            background-color: #ff66b2;
+        }
+        .nav-link {
+            margin-top: 20px;
+            display: inline-block;
+            text-decoration: none;
+            color: #ff99cc;
+            font-size: 1rem;
+        }
+        .nav-link:hover {
+            color: #ff66b2;
+        }
+    </style>
+    <script>
+        let tasks = [];
+        let timerInterval;
+        let alternateTimers = [];
+
+        function startTimerSequence(times) {
+            if (timerInterval) clearInterval(timerInterval);
+            alternateTimers = times;
+            startTimer(alternateTimers.shift());
+        }
+
+        function startTimer(minutes) {
+            const timerElement = document.getElementById('timer');
+            let seconds = minutes * 60;
+
+            timerInterval = setInterval(() => {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                timerElement.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+                if (--seconds < 0) {
+                    clearInterval(timerInterval);
+                    if (alternateTimers.length > 0) {
+                        startTimer(alternateTimers.shift());
+                    } else {
+                        timerElement.textContent = "Time's up!";
+                    }
+                }
+            }, 1000);
+        }
+
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const taskText = taskInput.value.trim();
+
+            if (taskText) {
+                tasks.push({ text: taskText, completed: false });
+                taskInput.value = '';
+                renderTasks();
+            }
+        }
+
+        function toggleTask(index) {
+            tasks[index].completed = !tasks[index].completed;
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+
+            tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.className = task.completed ? 'completed' : '';
+
+                const span = document.createElement('span');
+                span.textContent = task.text;
+
+                const button = document.createElement('button');
+                button.textContent = task.completed ? 'Undo' : 'Complete';
+                button.onclick = () => toggleTask(index);
+
+                li.appendChild(span);
+                li.appendChild(button);
+                taskList.appendChild(li);
+            });
+
+            const clearButton = document.getElementById('clearButton');
+            clearButton.style.display = tasks.every(task => task.completed) && tasks.length > 0 ? 'block' : 'none';
+        }
+
+        function clearTasks() {
+            const completedTasks = tasks.filter(task => task.completed);
+            localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
+            tasks = [];
+            renderTasks();
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="timer" id="timer">0:00</div>
+        <div class="buttons">
+            <button onclick="startTimerSequence([25, 5])">25 Min / 5 Min</button>
+            <button onclick="startTimerSequence([50, 10])">50 Min / 10 Min</button>
+        </div>
+        <div class="tasks">
+            <input type="text" id="taskInput" placeholder="Add a task...">
+            <button onclick="addTask()">Add</button>
+            <ul id="taskList"></ul>
+        </div>
+        <button id="clearButton" class="clear-btn" onclick="clearTasks()">Clear All Tasks</button>
+        <a href="pookiestudy2.html" class="nav-link">View Completed Tasks</a>
+    </div>
+</body>
+</html>
